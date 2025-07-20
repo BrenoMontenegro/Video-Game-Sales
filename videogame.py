@@ -1,3 +1,12 @@
+import argparse
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--kernel", type=str, default="rbf")
+    args = parser.parse_args()
+    
+    print("Kernel recebido:", args.kernel)
+
 # Importa a biblioteca pandas, usada para análise e manipulação de dados.
 import pandas as pd
 
