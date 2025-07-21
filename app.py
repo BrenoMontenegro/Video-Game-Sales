@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
+from pyngrok import ngrok, conf
+
 # from videogame import predict_dataset  
-#Adicionar função no arquivo do modelo (to do)
+# Adicionar função no arquivo do modelo (to do)
 
 app = Flask(__name__)
 
@@ -26,4 +28,9 @@ def predict():
         return jsonify({'erro': str(e)})
 
 if __name__ == '__main__':
+    conf.get_default().auth_token = "30Cc8cxwu8zYlX5gXdE0JTdQ7jj_7E9mNHWsfeJafbM4nv6Dv"
+
+    public_url = ngrok.connect(5001)
+    print("URL pública:", public_url)
+
     app.run(debug=True)
