@@ -394,6 +394,8 @@ print("Teste:", len(X_test))
 - Com isso Optamos por agrupar as plataformas generalizando elas por fabricante.
 """
 
+!pip install mlflow pyngrok
+
 from sklearn.preprocessing import LabelEncoder
 
 # Função para agrupar plataformas por fabricantes/tipo
@@ -430,12 +432,20 @@ df = df.drop(columns=['Name', 'Publisher', 'Global_Sales',
 df = df.dropna()
 
 # Codificar variáveis categóricas
-df['Platform'] = LabelEncoder().fit_transform(df['Platform'])
-df['Genre'] = LabelEncoder().fit_transform(df['Genre'])
+le_genre = LabelEncoder()
+df['Genre'] = le_genre.fit_transform(df['Genre'])
+
+le_platform = LabelEncoder()
+df['Platform'] = le_platform.fit_transform(df['Platform'])
+
+le_top_region = LabelEncoder()
+df['Top_Region_Encoded'] = le_top_region.fit_transform(df['Top_Region'])
+
 
 # Selecionar apenas Platform e Genre como preditores
 X = df[['Platform', 'Genre']]
 y = df['Top_Region']
+y_encoded = df['Top_Region_Encoded']
 
 # Divisão dos dados
 X_train, X_test, y_train, y_test = train_test_split(
@@ -449,8 +459,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 """
 
-!pip install mlflow pyngrok
-
 import mlflow
 import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
@@ -458,7 +466,7 @@ from sklearn.metrics import accuracy_score, classification_report
 
 with mlflow.start_run(run_name="RandomForest"):
     # Modelo Random Forest com hiperparâmetros definidos
-    clf = RandomForestClassifier(
+    clf_model = RandomForestClassifier(
         n_estimators=5,
         max_depth=3,
         min_samples_split=15,
@@ -467,10 +475,10 @@ with mlflow.start_run(run_name="RandomForest"):
     )
 
     # Treinamento
-    clf.fit(X_train, y_train)
+    clf_model.fit(X_train, y_train)
 
     # Previsões
-    y_pred = clf.predict(X_test)
+    y_pred = clf_model.predict(X_test)
 
     # Avaliação
     acc = accuracy_score(y_test, y_pred)
@@ -485,7 +493,7 @@ with mlflow.start_run(run_name="RandomForest"):
     mlflow.log_param("random_state", 42)
 
     mlflow.log_metric("accuracy", acc)
-    mlflow.sklearn.log_model(clf, "modelo_random_forest")
+    mlflow.sklearn.log_model(clf_model, "modelo_random_forest")
 
     # Saída
     print("🌲 Acurácia:", acc)
@@ -517,11 +525,11 @@ with mlflow.start_run(run_name="GradientBoosting"):
     sample_weights = compute_sample_weight(class_weight=class_weight_person, y=y_train)
 
     # Criação e treino do modelo
-    modelo_gb = GradientBoostingClassifier(random_state=42)
-    modelo_gb.fit(X_train, y_train, sample_weight=sample_weights)
+    gb_model = GradientBoostingClassifier(random_state=42)
+    gb_model.fit(X_train, y_train, sample_weight=sample_weights)
 
     # Previsões
-    y_pred = modelo_gb.predict(X_test)
+    y_pred = gb_model.predict(X_test)
 
     # Métricas
     acc = accuracy_score(y_test, y_pred)
@@ -531,7 +539,7 @@ with mlflow.start_run(run_name="GradientBoosting"):
     mlflow.log_param("model_type", "GradientBoosting")
     mlflow.log_param("random_state", 42)
     mlflow.log_metric("accuracy", acc)
-    mlflow.sklearn.log_model(modelo_gb, "modelo_gradient_boosting")
+    mlflow.sklearn.log_model(gb_model, "modelo_gradient_boosting")
 
     print("🌟 Resultados do Gradient Boosting Classifier:")
     print("Acurácia:", acc)
@@ -551,11 +559,11 @@ from sklearn.metrics import accuracy_score, classification_report
 
 with mlflow.start_run(run_name="KNN"):
     # Instancia e treina o modelo
-    modelo_knn = KNeighborsClassifier(n_neighbors=5, weights='distance')
-    modelo_knn.fit(X_train, y_train)
+    knn_model = KNeighborsClassifier(n_neighbors=5, weights='distance')
+    knn_model.fit(X_train, y_train)
 
     # Faz previsões
-    y_pred_knn = modelo_knn.predict(X_test)
+    y_pred_knn = knn_model.predict(X_test)
 
     # Calcula métricas
     acc = accuracy_score(y_test, y_pred_knn)
@@ -567,7 +575,7 @@ with mlflow.start_run(run_name="KNN"):
     mlflow.log_metric("accuracy", acc)
 
     # Loga o modelo treinado
-    mlflow.sklearn.log_model(modelo_knn, "modelo_knn")
+    mlflow.sklearn.log_model(knn_model, "modelo_knn")
 
     print("🔍 Resultados do K-Nearest Neighbors Classifier:")
     print("Acurácia:", acc)
@@ -584,13 +592,13 @@ from sklearn.metrics import accuracy_score
 with mlflow.start_run(run_name="SVM_Model"):
 
     # Instancia o modelo SVM
-    svm = SVC(kernel='linear', C=1.0, random_state=42)
+    svm_model = SVC(kernel='linear', C=1.0, random_state=42)
 
     # Treina o modelo
-    svm.fit(X_train, y_train)
+    svm_model.fit(X_train, y_train)
 
     # Faz previsões
-    y_pred = svm.predict(X_test)
+    y_pred = svm_model.predict(X_test)
 
     # Calcula a acurácia
     acc = accuracy_score(y_test, y_pred)
@@ -602,7 +610,81 @@ with mlflow.start_run(run_name="SVM_Model"):
     mlflow.log_metric("accuracy", acc)
 
     # Loga o modelo treinado
-    mlflow.sklearn.log_model(svm, "svm_model")
+    mlflow.sklearn.log_model(svm_model, "svm_model")
+
+"""# 6.5 Modelo nº 5: MultiLayer Perceptron"""
+
+import pandas as pd
+import mlflow
+import mlflow.sklearn
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import classification_report, confusion_matrix, f1_score, accuracy_score
+from sklearn.model_selection import train_test_split
+
+# Normalizar as variáveis (importante para MLP)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Dividir em treino e teste
+X_train_mlp, X_test_mlp, y_train_mlp, y_test_mlp = train_test_split(X_scaled, y_encoded, test_size=0.2, random_state=42)
+
+# Parametros do modelo
+hidden_layers = (64, 32)
+activation = 'relu'
+max_iter = 500
+random_state = 42
+
+# Inicia uma run no MLflow
+with mlflow.start_run(run_name="MLP_Model"):
+
+  mlp_model = MLPClassifier(hidden_layer_sizes=hidden_layers, activation=activation, max_iter=max_iter, random_state=random_state)
+
+  mlp_model.fit(X_train_mlp, y_train_mlp)
+
+  y_pred_mlp = mlp_model.predict(X_test_mlp)
+
+  acc = accuracy_score(y_test_mlp, y_pred_mlp)
+  f1 = f1_score(y_test_mlp, y_pred_mlp, average='weighted')
+
+  # Log de parâmetros
+  mlflow.log_param("hidden_layer_sizes", hidden_layers)
+  mlflow.log_param("activation", activation)
+  mlflow.log_param("max_iter", max_iter)
+  mlflow.log_param("random_state", random_state)
+
+  # Log de métricas
+  mlflow.log_metric("accuracy", acc)
+  mlflow.log_metric("f1_score_weighted", f1)
+
+  # Log do modelo com exemplo de entrada
+  input_example = np.array([[0, 1]])  # Exemplo: Platform 0, Genre 1
+  mlflow.sklearn.log_model(mlp_model, "MLP_model", input_example=input_example)
+
+  # Gera e salva a matriz de confusão
+  cm = confusion_matrix(y_test_mlp, y_pred_mlp)
+  plt.figure(figsize=(8, 6))
+  sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+              xticklabels=le_top_region.classes_,
+              yticklabels=le_top_region.classes_)
+  plt.xlabel("Predict")
+  plt.ylabel("True")
+  plt.title("Matriz de Confusão - MLP")
+
+  # Salva localmente e faz upload para o MLflow
+  cm_path = "confusion_matrix.png"
+  plt.tight_layout()
+  plt.savefig(cm_path)
+  mlflow.log_artifact(cm_path)
+
+  # Imprime resumo no console
+  print("Acurácia:", acc)
+  print("\nRelatório de Classificação:")
+  print(classification_report(y_test_mlp, y_pred_mlp, target_names=le_top_region.classes_, zero_division=0))
 
 """# 7. Comparação dos Modelos"""
 
@@ -611,9 +693,9 @@ import matplotlib.pyplot as plt
 
 # Exibir a matriz de confusão CLF
 disp = ConfusionMatrixDisplay.from_estimator(
-    clf, X_test, y_test,
+    clf_model, X_test, y_test,
     cmap='viridis',  # ou qualquer outro colormap
-    display_labels=clf.classes_
+    display_labels=clf_model.classes_
 )
 
 plt.title("Matriz de Confusão - Random Forest Classifier")
@@ -621,9 +703,9 @@ plt.show()
 
 # Exibir a matriz de confusão GB
 disp = ConfusionMatrixDisplay.from_estimator(
-    modelo_gb, X_test, y_test,
+    gb_model, X_test, y_test,
     cmap='viridis',  # ou qualquer outro colormap
-    display_labels=modelo_gb.classes_
+    display_labels=gb_model.classes_
 )
 
 plt.title("Matriz de Confusão - Gradient Boosting")
@@ -631,12 +713,32 @@ plt.show()
 
 # Exibir a matriz de confusão k-Nearest Neighbors
 disp = ConfusionMatrixDisplay.from_estimator(
-    modelo_knn, X_test, y_test,
+    knn_model, X_test, y_test,
     cmap='viridis',  # ou qualquer outro colormap
-    display_labels=modelo_knn.classes_
+    display_labels=knn_model.classes_
 )
 
 plt.title("Matriz de Confusão - k-Nearest Neighbors")
+plt.show()
+
+# Exibir a matriz de confusão Support Vector Machine
+disp = ConfusionMatrixDisplay.from_estimator(
+    svm_model, X_test, y_test,
+    cmap='viridis',  # ou qualquer outro colormap
+    display_labels=svm_model.classes_
+)
+
+plt.title("Matriz de Confusão - Support Vector Machine")
+plt.show()
+
+# Exibir a matriz de confusão Multilayer Perceptron
+disp = ConfusionMatrixDisplay.from_estimator(
+    mlp_model, X_test_mlp, y_test_mlp,
+    cmap='viridis',  # ou qualquer outro colormap
+    display_labels=mlp_model.classes_
+)
+
+plt.title("Matriz de Confusão - MultiLayer Perceptron")
 plt.show()
 
 """- Random Forest parece o mais preciso para NA Sales, mas menos equilibrado nas outras classes.
@@ -662,6 +764,7 @@ df = df.dropna()
 # Definir variáveis preditoras e alvo
 X = df[['Platform', 'Genre', 'Year']]
 y = df['Top_Region']
+y_encoded = df['Top_Region_Encoded']
 
 # Dividir conjunto de dados
 X_train, X_test, y_train, y_test = train_test_split(
@@ -1195,6 +1298,72 @@ with mlflow.start_run(run_name="SVM"):
     print(classification_report(y_test, y_pred, zero_division=0))
     print("✅ CV Acurácia média:", cv_mean)
 
+"""# 8.5 Modelo Multilayer Perceptron"""
+
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import classification_report, accuracy_score
+
+# Hiperparâmetros a testar
+param_dist = {
+    'hidden_layer_sizes': [(64,), (128,), (64, 32), (128, 64)],
+    'activation': ['relu', 'tanh'],
+    'alpha': [0.0001, 0.001, 0.01],
+    'learning_rate_init': [0.001, 0.01],
+    'solver': ['adam'],
+    'max_iter': [300],
+}
+
+# MLP base
+mlp_model = MLPClassifier(random_state=42)
+
+# Random Search
+random_search = RandomizedSearchCV(
+    estimator=MLPClassifier(random_state=42),
+    param_distributions=param_dist,
+    n_iter=20,  # Mais iter = melhor busca, mais tempo
+    cv=3,
+    n_jobs=-1,
+    verbose=1,
+    scoring='accuracy'
+)
+
+# Treinar o random search
+random_search.fit(X_train_mlp, y_train_mlp)
+
+# Melhores parâmetros encontrados
+print("Melhores hiperparâmetros:")
+print(random_search.best_params_)
+
+# Avaliação no conjunto de teste
+best_model = random_search.best_estimator_
+y_pred_mlp = best_model.predict(X_test_mlp)
+
+print("\nAcurácia no conjunto de teste:", accuracy_score(y_test_mlp, y_pred_mlp))
+print("\nRelatório de Classificação:")
+print(classification_report(y_test_mlp, y_pred_mlp, target_names=le_top_region.classes_, zero_division=0))
+
+"""# Modelo Multilayer Perceptron com melhores hiperparâmetros"""
+
+# Modelo MLP com os melhores parâmetros
+mlp_model = MLPClassifier(
+    solver='adam',
+    max_iter=300,
+    learning_rate_init=0.001,
+    hidden_layer_sizes=(128, 64),
+    alpha=0.001,
+    activation='tanh',
+    random_state=42)
+
+
+mlp_model.fit(X_train_mlp, y_train_mlp)
+
+y_pred_mlp = mlp_model.predict(X_test_mlp)
+
+print("Acurácia do melhor modelo:", accuracy_score(y_test_mlp, y_pred_mlp))
+print("\nRelatório de Classificação:")
+print(classification_report(y_test_mlp, y_pred_mlp, target_names=le_top_region.classes_, zero_division=0))
+
 """# 9. Comparação final após otimização de hiperparâmetros
 
 * Random Forest é o modelo mais eficaz após otimização, com a maior acurácia (0.80) e melhores métricas em NA_Sales e JP_Sales, além de um bom equilíbrio geral. Apresenta um avanço significativo comparado ao seu modelo anterior que conseguiu 70% de acurácia com muitos erros na análise das colunas.
@@ -1207,10 +1376,17 @@ with mlflow.start_run(run_name="SVM"):
 """
 
 from pyngrok import ngrok, conf
+from google.colab import userdata
+import os
 
-authtoken = "3075v60RcaHpax7dIK7bryUb0VK_3CQ7iyJj1fsUYBExNA6Sb"
+# Pegando Secret interna do colab
+AUTH_NGROK = userdata.get('AUTH_NGROK')
 
-conf.get_default().auth_token = authtoken
+# Setando Secret como Env do colab
+os.environ['AUTH_NGROK'] = AUTH_NGROK
+
+# Setando token na conf do ngrok
+conf.get_default().auth_token = AUTH_NGROK
 
 # Encerrar conexões anteriores
 ngrok.kill()
