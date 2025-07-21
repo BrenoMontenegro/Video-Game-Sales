@@ -394,8 +394,6 @@ print("Teste:", len(X_test))
 - Com isso Optamos por agrupar as plataformas generalizando elas por fabricante.
 """
 
-!pip install mlflow pyngrok
-
 from sklearn.preprocessing import LabelEncoder
 
 # Função para agrupar plataformas por fabricantes/tipo
@@ -1375,26 +1373,26 @@ print(classification_report(y_test_mlp, y_pred_mlp, target_names=le_top_region.c
 # 10.  Vizualização do MlFlow UI (Apenas teste - Google Colab).
 """
 
-from pyngrok import ngrok, conf
-from google.colab import userdata
-import os
+# from pyngrok import ngrok, conf
+# from google.colab import userdata
+# import os
 
-# Pegando Secret interna do colab
-AUTH_NGROK = userdata.get('AUTH_NGROK')
+# # Pegando Secret interna do colab
+# AUTH_NGROK = userdata.get('AUTH_NGROK')
 
-# Setando Secret como Env do colab
-os.environ['AUTH_NGROK'] = AUTH_NGROK
+# # Setando Secret como Env do colab
+# os.environ['AUTH_NGROK'] = AUTH_NGROK
 
-# Setando token na conf do ngrok
-conf.get_default().auth_token = AUTH_NGROK
+# # Setando token na conf do ngrok
+# conf.get_default().auth_token = AUTH_NGROK
 
-# Encerrar conexões anteriores
-ngrok.kill()
+# # Encerrar conexões anteriores
+# ngrok.kill()
 
-# Iniciar o MLflow UI (em segundo plano)
-get_ipython().system_raw("mlflow ui --port 5000 &")
+# # Iniciar o MLflow UI (em segundo plano)
+# get_ipython().system_raw("mlflow ui --port 5000 &")
 
-# Expor a porta 5000 do MLflow UI via ngrok
-public_url = ngrok.connect(5000)
-print(f"Acesse o MLflow UI aqui: {public_url}")
+# # Expor a porta 5000 do MLflow UI via ngrok
+# public_url = ngrok.connect(5000)
+# print(f"Acesse o MLflow UI aqui: {public_url}")
 
