@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload de Dataset</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      color: #fff;
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    input[type="file"] {
+      margin-top: 20px;
+      padding: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 30px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ddd;
+    }
+
+    #result {
+      margin-top: 30px;
+      white-space: pre-wrap;
+      text-align: left;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+  </style>
+</head>
+<body>
+    
+    
+  <div class="container">
+    <h1>Faça o Upload aqui</h1>
+    <input type="file" id="fileInput" accept=".csv">
+    <br>
+    <button onclick="enviarArquivo()">Enviar e Ver Previsões</button>
+    <div id="result"></div>
+  </div>
+
+
+  <script>
+    function enviarArquivo() {
+      const input = document.getElementById("fileInput");
+      const file = input.files[0];
+
+      if (!file) {
+        alert("Por favor, selecione um arquivo .csv.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("arquivo", file);
+
+      fetch("http://localhost:5000/predict", {
+        method: "POST",
+        body: formData
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerText = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        alert("Erro ao enviar o arquivo.");
+        console.error(error);
+      });
+    }
+  </script>
+  
+</body>
+</html>
