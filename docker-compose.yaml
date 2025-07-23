@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  ml_app:
+    build: .
+    container_name: ml_app
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./dados:/app/dados
+    environment:
+      - MLFLOW_TRACKING_URI=file:/app/mlruns
+    command: python video-game.py
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: mlflow_ui
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=/mlflow/mlruns
+    command: mlflow ui --backend-store-uri /mlflow/mlruns --host 0.0.0.0 --port 5000
+
+  webapp:
+    build: .
+    container_name: modelo_app
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./modelo.pkl:/app/modelo.pkl
+    depends_on:
+      - ml_app
+    command: python app.py
