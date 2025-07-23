@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
-
-import argparse
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--kernel", type=str, default="rbf")
-    args = parser.parse_args()
-    
-    print("Kernel recebido:", args.kernel)
+"""video-game.ipynb"""
 
 # Importa a biblioteca pandas, usada para análise e manipulação de dados.
 import pandas as pd
@@ -127,7 +119,6 @@ plt.figure(figsize=(12, 6))
 
 # Define as colunas referentes às vendas por região.
 sales_columns = ['NA_Sales', 'EU_Sales', 'JP_Sales', 'Other_Sales']
-df['melhor_random'] = df[sales_columns].idxmax(axis=1)
 
 # Transforma o DataFrame de formato largo para longo com `melt`, criando colunas 'Região' e 'Vendas'.
 # Isso é necessário para fazer um boxplot comparativo entre as regiões.
@@ -390,8 +381,6 @@ import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
-
 with mlflow.start_run(run_name="RandomForest"):
     # Modelo Random Forest com hiperparâmetros definidos
     clf_model = RandomForestClassifier(
@@ -427,8 +416,6 @@ with mlflow.start_run(run_name="RandomForest"):
     print("🌲 Acurácia:", acc)
     print("\n📋 Relatório de Classificação:\n")
     print(classification_report(y_test, y_pred, zero_division=0))
-    
-    
 
 import mlflow
 import mlflow.sklearn
@@ -1216,44 +1203,25 @@ print("Acurácia do melhor modelo:", accuracy_score(y_test_mlp, y_pred_mlp))
 print("\nRelatório de Classificação:")
 print(classification_report(y_test_mlp, y_pred_mlp, target_names=le_top_region.classes_, zero_division=0))
 
-# Funções para prever os dados utilizando Random Forest (melhor modelo)
-from sklearn.preprocessing import StandardScaler
+# from pyngrok import ngrok, conf
+# from google.colab import userdata
+# import os
 
-scaler = StandardScaler()
+# # Pegando Secret interna do colab
+# AUTH_NGROK = userdata.get('AUTH_NGROK')
 
-colunas_usadas = ['Year_of_Release', 'Critic_Score', 'User_Score', 'Global_Sales']
+# # Setando Secret como Env do colab
+# os.environ['AUTH_NGROK'] = AUTH_NGROK
 
-def preprocessar_dados(dados):
-    """
-    Aplica o mesmo pré-processamento usado no treino:
-    - Seleciona colunas
-    - Remove NaN
-    - Normaliza
-    """
-    dados = dados[colunas_usadas].dropna()
-    dados_escalados = scaler.fit_transform(dados)  
-    return dados_escalados
+# # Setando token na conf do ngrok
+# conf.get_default().auth_token = AUTH_NGROK
 
-def prever_dados_novos(df_novos):
-    import pandas as pd
-    import joblib
+# # Encerrar conexões anteriores
+# ngrok.kill()
 
-    # Carregar modelo e colunas de treino
-    modelo = joblib.load('melhor_random.pkl')
-    colunas_treinadas = joblib.load('colunas_treinadas.pkl')
+# # Iniciar o MLflow UI (em segundo plano)
+# get_ipython().system_raw("mlflow ui --port 5000 &")
 
-    # Pré-processamento
-    df_novos = df_novos.drop(['Publisher', 'Developer', 'Rating', 'NA_Sales', 'EU_Sales',
-                              'JP_Sales', 'Other_Sales', 'Global_Sales'], axis=1, errors='ignore')
-
-    df_novos.dropna(inplace=True)
-
-    df_novos = pd.get_dummies(df_novos)
-
-    # Alinhar com colunas usadas no treinamento
-    df_novos = df_novos.reindex(columns=colunas_treinadas, fill_value=0)
-
-    # Fazer predições
-    predicoes = modelo.predict(df_novos)
-
-    return pd.Series(predicoes)
+# # Expor a porta 5000 do MLflow UI via ngrok
+# public_url = ngrok.connect(5000)
+# print(f"Acesse o MLflow UI aqui: {public_url}")

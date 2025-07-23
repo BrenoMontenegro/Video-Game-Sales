@@ -23,6 +23,7 @@ Prever a melhor região para vender o jogo de acordo com seu gênero e plataform
 - MatplotLib 
 - MlFlow
 - TensorFlow
+- Sklearn
 - Ngrok
 
 ### ...
