@@ -21,3 +21,14 @@ services:
     environment:
       - MLFLOW_BACKEND_STORE_URI=/mlflow/mlruns
     command: mlflow ui --backend-store-uri /mlflow/mlruns --host 0.0.0.0 --port 5000
+
+   webapp:
+    build: .
+    container_name: modelo_app
+    ports:
+      - "8501:8501"  
+    volumes:
+      - ./modelo.pkl:/app/modelo.pkl
+    depends_on:
+      - ml_app
+    command: python app.py
