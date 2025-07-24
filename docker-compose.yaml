@@ -36,7 +36,7 @@ services:
     environment:
       - MLFLOW_TRACKING_URI=file:/mlruns
     # Ajustar parametros para sua Run do MLFLOW
-    command: mlflow models serve -m /mlruns/experiment-id/models/model-id/artifacts --no-conda --host 0.0.0.0 --port 5001
+    command: mlflow models serve -m /mlruns/768292707942666498/models/m-a20475479adb4153aec4368d274ecf69/artifacts --no-conda --host 0.0.0.0 --port 5001
 
   # api-bestmodel-test:
   #   build: .
