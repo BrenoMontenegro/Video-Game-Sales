@@ -1130,7 +1130,7 @@ with mlflow.start_run(run_name="Random Forest Classifier"):
     mlflow.log_metric("cv_accuracy_mean", scores.mean())
 
     # Modelo
-    mlflow.sklearn.log_model(clf, "random_forest_model")
+    mlflow.sklearn.log_model(clf, "random_forest_best_model")
 
     # Prints opcionais
     print("🔍 Acurácia:", acc)
