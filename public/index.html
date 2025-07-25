@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Upload de Dataset</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -343,8 +344,58 @@
       }
 
       errorCsvDivEl.style.display = 'none';
+      
+      resultCsvEl.innerHTML = ''; // limpa antes de iniciar nova análise
 
-      // logica de verificação se tem as colunas corretas para enviar no predict e mandar 
+        Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function (results) {
+          const data = results.data;
+          const columns = results.meta.fields;
+      
+          const colunasEsperadas = ['Platform', 'Genre', 'Year'];
+          const colunasEstaoCorretas = JSON.stringify(columns) === JSON.stringify(colunasEsperadas);
+      
+          if (!colunasEstaoCorretas) {
+            errorMsgCsv(`As colunas devem ser: ${colunasEsperadas.join(', ')}`);
+            return;
+          }
+          
+          //Além da verificação anterior, essa aqui vai ver se existem campos vazios
+          const camposInvalidos = data.some(row =>
+            !row.Platform || !row.Genre || !row.Year
+          );
+
+          if (camposInvalidos) {
+            errorMsgCsv('Algumas linhas do CSV possuem campos vazios.');
+            return;
+          }
+      
+          fetch('http://localhost:4000/mlflow/invocations', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              dataframe_split: {
+                columns: colunasEsperadas,
+                data: data.map(row => [row.Platform, row.Genre, row.Year])
+              }
+            })
+          }).then(response => response.json())
+            .then(data => {
+              resultCsvEl.style.display = 'block';
+              resultCsvEl.innerHTML = `Previsões: ${data.predictions.join(', ')}`;
+            }).catch(error => {
+              console.error('Erro:', error);
+              errorMsgCsv('Erro ao processar o arquivo.');
+            });
+        },
+        error: function (err) {
+          errorMsgCsv('Erro ao ler o arquivo CSV.');
+        }
+      });
     }
 
     const errorMsgCsv = (msg) => {
