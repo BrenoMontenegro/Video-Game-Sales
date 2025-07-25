@@ -22,8 +22,6 @@ services:
       - "5000:5000"
     volumes:
       - ./mlruns:/mlruns
-    # depends_on:
-    #   - ml_app
     environment:
       - MLFLOW_TRACKING_URI=file:/mlruns
     command: mlflow ui --backend-store-uri /mlruns --host 0.0.0.0 --port 5000
@@ -35,14 +33,14 @@ services:
     container_name: mlflow_best_model
     ports:
       - "5001:5001"
-    # depends_on:
-    #   - ml_app
     volumes:
-      - ./mlruns:/mlruns
+      - ./mlruns:/mlruns 
+      - ./api-best-model/mlbestmodelrun:/mlbestmodelrun
     environment:
       - MLFLOW_TRACKING_URI=file:/mlruns
-    # Ajustar parametros para sua Run do MLFLOW
-    command: mlflow models serve -m /mlruns/144870851845979242/models/m-106f382f8c664abaa56864864b962945/artifacts --no-conda --host 0.0.0.0 --port 5001
+    # Ajustar parametros para sua Run do MLFLOW com o comando abaixo:
+    # mlflow models serve -m /mlruns/(EXPERIMENT-ID)/models/(MODEL-ID)/artifacts --no-conda --host 0.0.0.0 --port 5001
+    command: mlflow models serve -m /mlbestmodelrun/144870851845979242/models/m-106f382f8c664abaa56864864b962945/artifacts --no-conda --host 0.0.0.0 --port 5001
     networks:
       - mlflow_net
 

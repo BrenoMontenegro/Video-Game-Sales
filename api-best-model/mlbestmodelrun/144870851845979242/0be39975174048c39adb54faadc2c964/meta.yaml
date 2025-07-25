@@ -1,0 +1,14 @@
+artifact_uri: file:///app/mlruns/144870851845979242/0be39975174048c39adb54faadc2c964/artifacts
+end_time: 1753403180747
+entry_point_name: ''
+experiment_id: '144870851845979242'
+lifecycle_stage: active
+run_id: 0be39975174048c39adb54faadc2c964
+run_name: Modelo KNN
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1753403168749
+status: 3
+tags: []
+user_id: root
