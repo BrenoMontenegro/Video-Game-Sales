@@ -89,7 +89,16 @@
     .text-info {
       font-size: 13px;
       color: #e7e7e7;
+    }
 
+    .text-error {
+      font-size: 13px;
+      color: #ff000090;
+    }
+
+    .title {
+      font-size: 28px;
+      color: #fff;
     }
 
     .file-upload {
@@ -156,6 +165,15 @@
       border-color: #004aad;
       box-shadow: 0 0 0 2px rgba(0, 74, 173, 0.2);
     }
+
+    .error-div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 
@@ -163,13 +181,13 @@
   <main>
     <div class="container-info">
       <div class="box">
-        <h1>Instruções</h1>
+        <h1 class="title">Instruções</h1>
         <p class="text-info">O csv deve conter as seguintes colunas (Plataform, Genre e Year) nesta mesma sequência.</p>
       </div>
     </div>
     <div class="container-submit">
       <div class="box">
-        <h1>Digite os dados</h1>
+        <h1 class="title">Digite os dados</h1>
         <p class="text-info">Digite os dados e veja a predição do modelo.</p>
         <div class="form-group">
           <label for="genre">
@@ -184,12 +202,16 @@
             Ano de Lançamento
           </label>
           <input class="input-text" type="text" name="year" id="year-input">
-          <button onclick="" type="submit">Enviar e ver Previsões</button>
         </div>
+        <div class="error-div" id="error-input-div">
+          <p class="text-error">Todos os campos precisam estar preenchidos.</p>
+        </div>
+        <button onclick="predictInput()" type="submit">Enviar e ver Previsões</button>
+
         <div class="result" id="result-input"></div>
       </div>
       <div class="box">
-        <h1>Faça o Upload aqui</h1>
+        <h1 class="title">Faça o Upload aqui</h1>
         <p class="text-info">Escolha e envie o csv para predição.</p>
         <div class="file-upload">
           <label for="fileInput" class="file-label">
@@ -199,7 +221,10 @@
           <span id="file-name" class="file-name">Nenhum arquivo selecionado</span>
         </div>
         <br>
-        <button onclick="enviarArquivo()">Enviar e Ver Previsões</button>
+        <div class="error-div" id="error-csv-div">
+          <p class="text-error">Todos os campos precisam estar preenchidos.</p>
+        </div>
+        <button onclick="predictCsv()">Enviar e Ver Previsões</button>
         <div class="result" id="result-csv"></div>
       </div>
     </div>
@@ -219,9 +244,26 @@
       }
     });
 
+    const predictInput = () => {
+      const genreInputEl = document.getElementById('genre-input');
+      const plataformInputEl = document.getElementById('plataform-input');
+      const yearInputEl = document.getElementById('year-input');
+      const result = document.getElementById('result-input');
 
 
-    function enviarArquivo() {
+      if (genreInputEl.value && plataformInputEl.value && yearInputEl.value) {
+        console.log(genreInputEl.value)
+        console.log(plataformInputEl.value)
+        console.log(yearInputEl.value)
+        result.style.padding = '10px';
+        result.innerHTML = `<p class="text-error">Nenhum campo pode estar vazio.</p>`;
+      } else {
+        result.style.padding = '10px';
+        result.innerHTML = `<p class="text-error">Nenhum campo pode estar vazio.</p>`;
+      }
+    }
+
+    const predictCsv = () => {
       const file = input.files[0];
 
       if (!file) {

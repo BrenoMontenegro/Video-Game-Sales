@@ -333,7 +333,7 @@ def agrupar_plataforma(p):
 df = df_sem_outliers.copy()
 
 # executa função de agrupamento de plataformas e coloca na coluna PlataformaAgrupada criada no dataframe
-df['Plataform'] = df['Platform'].apply(agrupar_plataforma)
+df['Platform'] = df['Platform'].apply(agrupar_plataforma)
 
 # Criar coluna com a região que teve mais vendas
 def regiao_mais_forte(row):
