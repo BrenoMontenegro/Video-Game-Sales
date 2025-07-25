@@ -1,8 +1,10 @@
+networks:
+  mlflow_net:
+    driver: bridge
+
 services:
   ml_app:
-    build: 
-      context: ./all-models-mlflow
-      dockerfile: Dockerfile
+    build: ./all-models-mlflow
     container_name: ml_app
     volumes:
       - ./mlruns:/app/mlruns
@@ -10,6 +12,8 @@ services:
     environment:
       - MLFLOW_TRACKING_URI=file:/app/mlruns
     command: python videogame.py
+    networks:
+      - mlflow_net
 
   mlflow:
     image: ghcr.io/mlflow/mlflow:latest
@@ -23,6 +27,8 @@ services:
     environment:
       - MLFLOW_TRACKING_URI=file:/mlruns
     command: mlflow ui --backend-store-uri /mlruns --host 0.0.0.0 --port 5000
+    networks:
+      - mlflow_net
   
   mlflow-best-model:
     image: ghcr.io/mlflow/mlflow:latest
@@ -36,16 +42,24 @@ services:
     environment:
       - MLFLOW_TRACKING_URI=file:/mlruns
     # Ajustar parametros para sua Run do MLFLOW
-    command: mlflow models serve -m /mlruns/experiment-id/models/model-id/artifacts --no-conda --host 0.0.0.0 --port 5001
+    command: mlflow models serve -m /mlruns/144870851845979242/models/m-106f382f8c664abaa56864864b962945/artifacts --no-conda --host 0.0.0.0 --port 5001
+    networks:
+      - mlflow_net
 
-  # api-bestmodel-test:
-  #   build: .
-  #   container_name: best_model_api
-  #   ports:
-  #     - "5000:5000"
-  #   volumes:
-  #     - ./best_model_api.pkl:/app/best_model_api.pkl
-  #   depends_on:
-  #     - ml_app
-  #   command: mlflow models serve -m /app/mlruns/0/<ID_DO_RUN>/artifacts/MLP_model --host 0.0.0.0 --port 5000
+  web:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./public:/app
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install -g http-server && http-server -p 3000"
+    networks:
+      - mlflow_net
 
+  proxy:
+    build: ./proxy
+    ports:
+      - "4000:4000"
+    networks:
+      - mlflow_net

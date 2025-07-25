@@ -77,13 +77,15 @@
     }
 
     .result {
+      display: none;
       margin-top: 30px;
       white-space: pre-wrap;
-      text-align: left;
+      text-align: center;
       background-color: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
       max-height: 300px;
       overflow-y: auto;
+      padding: 10px;
     }
 
     .text-info {
@@ -159,6 +161,7 @@
       transition: border-color 0.3s, box-shadow 0.3s;
       background-color: #fff;
       color: #222;
+      text-align: center;
     }
 
     .input-text:focus {
@@ -167,7 +170,7 @@
     }
 
     .error-div {
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       background-color: rgba(255, 255, 255, 0.1);
@@ -222,7 +225,7 @@
         </div>
         <br>
         <div class="error-div" id="error-csv-div">
-          <p class="text-error">Todos os campos precisam estar preenchidos.</p>
+          <p class="text-error" id="msg-error-csv">Todos os campos precisam estar preenchidos.</p>
         </div>
         <button onclick="predictCsv()">Enviar e Ver Previsões</button>
         <div class="result" id="result-csv"></div>
@@ -248,46 +251,78 @@
       const genreInputEl = document.getElementById('genre-input');
       const plataformInputEl = document.getElementById('plataform-input');
       const yearInputEl = document.getElementById('year-input');
-      const result = document.getElementById('result-input');
+      const resultInputEl = document.getElementById('result-input');
+      const errorInputDivEl = document.getElementById('error-input-div');
 
 
       if (genreInputEl.value && plataformInputEl.value && yearInputEl.value) {
-        console.log(genreInputEl.value)
-        console.log(plataformInputEl.value)
-        console.log(yearInputEl.value)
-        result.style.padding = '10px';
-        result.innerHTML = `<p class="text-error">Nenhum campo pode estar vazio.</p>`;
+        errorInputDivEl.style.display = 'none';
+        resultInputEl.style.display = 'block';
+
+        const jsonPredict = {
+          dataframe_split: {
+            columns: ["Platform", "Genre", "Year"],
+            data: [
+              [plataformInputEl.value, genreInputEl.value, yearInputEl.value]
+            ]
+          }
+        }
+
+        fetch('http://localhost:4000/mlflow/invocations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(jsonPredict)
+        }).then(response => {
+          return response.json();
+        }).then((data) => {
+          if (data.predictions[0] === 'NA_Sales') {
+            resultInputEl.innerHTML = 'America do Norte'
+          } else if (data.predictions[0] === 'JP_Sales') {
+            resultInputEl.innerHTML = 'Japão'
+          } else if(data.predictions[0] === 'EU_Sales') {
+            resultInputEl.innerHTML = 'Europa'
+          }
+        }).catch(error => {
+          console.error('Erro:', error);
+
+        });
       } else {
-        result.style.padding = '10px';
-        result.innerHTML = `<p class="text-error">Nenhum campo pode estar vazio.</p>`;
+        resultInputEl.style.display = 'none';
+        errorInputDivEl.style.display = 'flex';
       }
     }
 
     const predictCsv = () => {
       const file = input.files[0];
+      const resultCsvEl = document.getElementById('result-csv');
+      const errorCsvDivEl = document.getElementById('error-csv-div');
 
       if (!file) {
-        alert("Por favor, selecione um arquivo .csv.");
+        errorMsgCsv('Escolha um arquivo válido.')
         return;
       }
 
-      const formData = new FormData();
-      formData.append("arquivo", file);
+      const isCsvOrExcel = (file.name.toLowerCase().endsWith('.csv') || file.name.toLowerCase().endsWith('.xlsx'))
 
-      fetch("http://localhost:5001/predict", {
-        method: "POST",
-        body: formData
-      })
-        .then(resp => resp.json())
-        .then(data => {
-          const resultDiv = document.getElementById("result");
-          resultDiv.innerText = JSON.stringify(data, null, 2);
-        })
-        .catch(error => {
-          alert("Erro ao enviar o arquivo.");
-          console.error(error);
-        });
+      if (!isCsvOrExcel) {
+        errorMsgCsv('Escolha um arquivo .csv ou xlsx.')
+        return;
+      }
+
+      errorCsvDivEl.style.display = 'none';
+
+      // logica de verificação se tem as colunas corretas para enviar no predict e mandar 
     }
+
+    const errorMsgCsv = (msg) => {
+      const errorCsvDivEl = document.getElementById('error-csv-div');
+      const errorMsgCsvEl = document.getElementById('msg-error-csv');
+      errorMsgCsvEl.innerHTML = msg;
+      errorCsvDivEl.style.display = 'block';
+    }
+
   </script>
 
 </body>

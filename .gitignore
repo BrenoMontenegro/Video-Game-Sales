@@ -1,3 +1,11 @@
 mlruns/
 dados/
 __pycache__/
+
+node_modules/
+package-lock.json
+
+index.html/
+
+nginx/
+nginx.conf/
