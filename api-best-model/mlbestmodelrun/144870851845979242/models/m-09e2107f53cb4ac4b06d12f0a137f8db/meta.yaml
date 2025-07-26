@@ -1,0 +1,10 @@
+artifact_location: file:///app/mlruns/144870851845979242/models/m-09e2107f53cb4ac4b06d12f0a137f8db/artifacts
+creation_timestamp: 1753403551214
+experiment_id: '144870851845979242'
+last_updated_timestamp: 1753403561269
+model_id: m-09e2107f53cb4ac4b06d12f0a137f8db
+model_type: null
+name: svm_model
+source_run_id: 49703b624fe0423fbf7496d9aa67918a
+status: 2
+status_message: null

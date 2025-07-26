@@ -1,0 +1,10 @@
+artifact_location: file:///app/mlruns/144870851845979242/models/m-33d5b9a7e1894b6f8f9d115c9d11035b/artifacts
+creation_timestamp: 1753403173371
+experiment_id: '144870851845979242'
+last_updated_timestamp: 1753403180568
+model_id: m-33d5b9a7e1894b6f8f9d115c9d11035b
+model_type: null
+name: knn_model
+source_run_id: 0be39975174048c39adb54faadc2c964
+status: 2
+status_message: null

@@ -1,0 +1,26 @@
+{
+  "name": "video-game-sales",
+  "version": "1.0.0",
+  "description": "<br>",
+  "main": "reverseproxy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrenoMontenegro/Video-Game-Sales.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BrenoMontenegro/Video-Game-Sales/issues"
+  },
+  "homepage": "https://github.com/BrenoMontenegro/Video-Game-Sales#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.5"
+  }
+}
